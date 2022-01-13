@@ -7,7 +7,7 @@
 
 #include <string>
 #include <iostream>
-#include "AVLnode.h"
+#include "AVLRanknode.h"
 #include "Functors.h"
 #define MAX_SIZE 201
 
@@ -20,6 +20,14 @@ namespace DS{
     {
         return a>b?a:b;
     }
+
+    static void copyArray(int *dst, int *src)
+    {
+        for (int i = 0; i < MAX_SIZE; ++i) {
+            dst[i] = src[i];
+        }
+    }
+
 
 
 
@@ -49,7 +57,7 @@ namespace DS{
         int numOfPlayersWithLowerLevel(int level);
         Node handleRoll(Node node);
         Node nextNodeInOrder(Node node);
-        Node handleRemove(Node to_remove);
+      //  Node handleRemove(Node to_remove);
         void preOrder(Node node);
         void inOrder(Node node);
         void postOrder(Node node);
@@ -60,7 +68,7 @@ namespace DS{
         void updateWeights(int level, int score, bool insert);
         void updateWeightsForSinglePlayer(int level, int score, bool insert);
         int getNumOfPlayersInTree();
-        int getNumOfPlayersWithScoreInRange(int level1, int level2);
+        int getNumOfPlayersWithScoreInRange(int level1, int level2, int score);
         int getNumOfPlayersInRange(int level1, int level2);
         int getLevelOfPlayerM(int m);
 
@@ -68,7 +76,12 @@ namespace DS{
 
 
         //public:
-        AVLRanktree(AVLRanktree *pRanktree) : root(nullptr) , max(nullptr), size(0), compare(), iterator(0){};
+        AVLRanktree(AVLRanktree *pRanktree) : root(nullptr) , max(nullptr), size(0), iterator(0), num_of_zero_level_players(0)
+        {
+            for (int i = 0; i < MAX_SIZE; ++i) {
+                zero_level_scores[i] = 0;
+            }
+        };
         ~AVLRanktree();
         void insert(int new_key);
         void remove(int key);
@@ -128,7 +141,6 @@ namespace DS{
             this->setIterator(0);
         }
 
-        int numOfPlayersWithLowerLevel(int level, int score);
     };
 
     
@@ -139,6 +151,22 @@ namespace DS{
     
     AVLnode* AVLRanktree::LLrotate(Node node) {
         Node left_son = node->left_son;
+
+        int node_players_num = getNumPlayers(node);
+        int node_level_sum = getSumOfLevel(node);
+        int node_scores[MAX_SIZE];
+        copyArray(node_scores, node->scores);
+        levelScores(node_scores, node->right_son, node->left_son);
+
+
+        int node_right_level_sum = getSumOfLevel(node->right_son);
+        int node_right_players_num = getNumPlayers(node->right_son);
+        int node_right_scores[MAX_SIZE];
+        copyArray(node_right_scores, left_son->scores);
+        levelScores(node_right_scores, left_son->right_son, left_son->left_son);
+
+
+
         node->left_son = left_son->right_son;
         if(left_son->right_son)
         {
@@ -150,9 +178,10 @@ namespace DS{
         //node->left_son = left_son->left_son;
         node->height = maximum(getHeight(node->right_son), getHeight(node->left_son))+1;
         left_son->height = maximum(getHeight(left_son->right_son), getHeight(left_son->left_son))+1;
-        DS::updateWeights(node);
-        DS::updateWeights(left_son);
 
+
+        DS::updateWeights(node, node_players_num, node_level_sum, node_scores);
+        DS::updateWeights(left_son, node_right_players_num, node_right_level_sum, node_right_scores);
 
         return left_son;
 
@@ -162,6 +191,21 @@ namespace DS{
     
     AVLnode* AVLRanktree::RRrotate(Node node) {
         Node right_son = node->right_son;
+
+        int node_players_num = getNumPlayers(node);
+        int node_level_sum = getSumOfLevel(node);
+        int node_scores[MAX_SIZE];
+        copyArray(node_scores, node->scores);
+        levelScores(node_scores, node->right_son, node->left_son);
+
+
+        int node_right_level_sum = getSumOfLevel(node->right_son);
+        int node_right_players_num = getNumPlayers(node->right_son);
+        int node_right_scores[MAX_SIZE];
+        copyArray(node_right_scores, right_son->scores);
+        levelScores(node_right_scores, right_son->right_son, right_son->left_son);
+
+
         node->right_son = right_son->left_son;
         if(right_son->left_son)
         {
@@ -172,6 +216,10 @@ namespace DS{
         right_son->left_son = node;
         node->height = maximum(getHeight(node->right_son), getHeight(node->left_son))+1;
         right_son->height = maximum(getHeight(right_son->right_son),getHeight(right_son->left_son))+1;
+
+
+        DS::updateWeights(node, node_players_num, node_level_sum, node_scores);
+        DS::updateWeights(right_son, node_right_players_num, node_right_level_sum, node_right_scores);
         return right_son;
     }
 
@@ -384,18 +432,6 @@ namespace DS{
 
 
     
-    AVLnode* AVLRanktree::handleRemove(AVLnode* to_remove)
-    {
-        bool has_right_son = (to_remove->right_son);
-        bool has_left_son = (to_remove->left_son);
-        if (has_left_son || has_right_son)
-        {
-            Node temp = (has_right_son) ? to_remove->right_son : to_remove->left_son;
-
-            delete to_remove;
-        }
-    }
-
 
 
 
@@ -582,7 +618,7 @@ namespace DS{
 
 
     
-    int AVLRanktree::numOfPlayersWithLowerLevel(int level, int score)
+    int AVLRanktree::numOfPlayersWithLowerLevel(int level)
     {
         int r = 0;
         Node iter = root;
@@ -665,9 +701,18 @@ namespace DS{
         while(iter != nullptr && iter->key != level)
         {
             bool isBigger = iter->key < level;
-            iter->scores[score]-= 1-(insert)*2;
-            iter->player_weight-= 1-(insert)*2;
-            iter->weighted_sum-= level - (insert)*2*level;
+            if(insert)
+            {
+                iter->scores[score]++;
+                iter->player_weight++;
+                iter->weighted_sum += level;
+            }
+            else
+            {
+                iter->scores[score]--;
+                iter->player_weight--;
+                iter->weighted_sum -= level;
+            }
             if(isBigger)
             {
                 iter = iter->right_son;
@@ -678,9 +723,18 @@ namespace DS{
         }
         if(iter != nullptr)
         {
-            iter->scores[score]-= 1+(insert)*2;
-            iter->player_weight-= 1+(insert)*2;
-            iter->weighted_sum-= level - (insert)*2*level;
+            if(insert)
+            {
+                iter->scores[score]++;
+                iter->player_weight++;
+                iter->weighted_sum += level;
+            }
+            else
+            {
+                iter->scores[score]--;
+                iter->player_weight--;
+                iter->weighted_sum -= level;
+            }
         }
 
     }
@@ -722,6 +776,27 @@ namespace DS{
     }
 
 
+    int AVLRanktree::getNumOfPlayersInRange(int level1, int level2)
+    {
+        int sum = numOfPlayersWithLowerLevel(level2) - numOfPlayersWithLowerLevel(level1);
+        Node level1_node = doesKeyExists(level1);
+        if(level1_node)
+        {
+            sum += getNumPlayers(level1_node);
+        }
+        return sum;
+    }
+
+    int AVLRanktree::getNumOfPlayersWithScoreInRange(int level1, int level2, int score)
+    {
+        int sum = numOfPlayesWithScoreAndLowerLevel(level2, score) - numOfPlayesWithScoreAndLowerLevel(level1, score);
+        Node level1_node = doesKeyExists(level1);
+        if(level1_node)
+        {
+            sum += getNumPlayersWithScore(level1_node, score);
+        }
+        return sum;
+    }
 
 
 }

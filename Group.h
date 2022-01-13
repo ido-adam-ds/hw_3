@@ -1,8 +1,7 @@
 #ifndef GROUP_H
 #define GROUP_H
 
-#include "AVLRanktree->h"
-#include "Player->h"
+#include "AVLRanktree.h"
 
 namespace DS{
 
@@ -15,6 +14,7 @@ namespace DS{
         std::shared_ptr<Group> father;
         std::shared_ptr<AVLRanktree> levels_tree;
         int group_size;
+
         //shared_ptr<AVLtree<shared_ptr<Player>, int, comparePlayers>> players;
 
     public:
@@ -24,8 +24,8 @@ namespace DS{
         Group(const Group& other) = default;
         ~Group() = default;
 
-        void insertPlayer(int PlayerID, int score);
-        void increseLevel(int level, int score);
+       // void insertPlayer(int PlayerID, int score);
+        //void increseLevel(int level, int score);
         int getGroupId() const{
             return GroupID;
         }
@@ -35,7 +35,7 @@ namespace DS{
         }
 
         int getNumOfPlayers() const{
-            return levels_tree->getNumOfPlayers();
+            return levels_tree->getNumOfPlayersInTree();
         }
 
  /*       void addPlayer(shared_ptr<Player> player_to_insert){
@@ -69,6 +69,12 @@ namespace DS{
         void increseLevel(int old_level, int new_level, int score);
 
         void removePlayer(int level, int score);
+
+        int getNumOfPlayersInRange(int level1, int level2);
+
+        int getNumOfPlayersInRangeWithScore(int level1, int level2, int score);
+
+        int getLevelOfPlayerM(int m);
     };
 
      
@@ -91,7 +97,22 @@ namespace DS{
     }
 
 
+    int Group::getNumOfPlayersInRange(int level1, int level2)
+    {
+        return levels_tree->getNumOfPlayersInRange(level1, level2);
+    }
 
+    int Group::getNumOfPlayersInRangeWithScore(int level1, int level2, int score)
+
+    {
+        return levels_tree->getNumOfPlayersWithScoreInRange(level1, level2 ,score);
+    }
+
+
+    int Group::getLevelOfPlayerM(int m)
+    {
+        return levels_tree->getLevelOfPlayerM(m);
+    }
 }
 
 #endif
