@@ -12,45 +12,65 @@ namespace DS {
 
 
 
-    template<int K, int SCALE>
+    
     class UF {
-        shared_ptr<Group<SCALE>> groups[K];
+        Group** groups;
+        int num_groups;
 
-        UF()
+    public:
+        UF(int k): num_groups(k)
         {
-            for (int i = 0; i<K; i++)
+            groups = (Group**)malloc(sizeof(Group*)*k);
+            for (int i = 0; i<k; i++)
             {
-                groups[i] = new Group<SCALE>(i);
+                Group* new_group = new Group(i+1);
+                groups[i] = new_group;
             }
         }
 
-        std::shared_ptr<Group<SCALE>> Find(int Group_id);
+        ~UF()
+        {
+            for (int i = 0; i<num_groups; i++)
+            {
+                delete groups[i];
+            }
+            free(groups);
+        }
+
+        Group* Find(int Group_id);
         void Union(int id1, int id2);
     };
 
-    template<int K, int SCALE>
-    std::shared_ptr<Group<SCALE>> UF<K, SCALE>::Find(int Group_id)
+    
+    Group* UF::Find(int Group_id)
     {
-        std::shared_ptr<Group<SCALE>> iter = groups[Group_id];
-        while(iter->father)
+        Group* iter = groups[Group_id];
+        Group* root;
+        while(iter->getFather())
         {
-            iter = iter->father;
+            iter = iter->getFather();
+        }
+        root = iter;
+        iter = groups[Group_id-1];
+        while(iter->getFather() != root)
+        {
+            iter->setFather(root);
         }
         return iter;
     }
 
-    template<int K, int SCALE>
-    void UF<K, SCALE>::Union(int id1, int id2)
+    
+    void UF::Union(int id1, int id2)
     {
-        std::shared_ptr<Group<SCALE>> group1 = Find(id1);
-        std::shared_ptr<Group<SCALE>> group2 = Find(id2);
+        Group* group1 = Find(id1);
+        Group* group2 = Find(id2);
         //merge trees
-        if(group1->group_size < group2->group_size)
+        if(group1->getGroupSize() < group2->getGroupSize())
         {
-            group1->father = group2;
+            group1->setFather(group2);
             //insert merged tree
         } else{
-            group2->father = group1;
+            group2->setFather(group1);
             //insert merged tree
         }
     }

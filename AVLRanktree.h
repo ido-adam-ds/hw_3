@@ -594,6 +594,7 @@ namespace DS{
     
     int AVLRanktree::numOfPlayesWithScoreAndLowerLevel(int level, int score)
     {
+        if(level < 0) return 0;
         int r = 0;
         Node iter = root;
         while(iter != nullptr && iter->key != level)
@@ -620,6 +621,7 @@ namespace DS{
     
     int AVLRanktree::numOfPlayersWithLowerLevel(int level)
     {
+        if(level < 0) return 0;
         int r = 0;
         Node iter = root;
         while(iter != nullptr && iter->key != level)

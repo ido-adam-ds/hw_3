@@ -11,15 +11,15 @@ namespace DS{
     
         int GroupID;
         int scale;
-        std::shared_ptr<Group> father;
+        Group* father;
         std::shared_ptr<AVLRanktree> levels_tree;
         int group_size;
 
         //shared_ptr<AVLtree<shared_ptr<Player>, int, comparePlayers>> players;
 
     public:
-        explicit Group(int GroupID, int scale):scale(scale), GroupID(GroupID), levels_tree(new AVLRanktree(nullptr)), father(nullptr), group_size(1){}
-        Group(int GroupID,int scale, shared_ptr<AVLRanktree> tree_to_insert):scale(scale),
+        explicit Group(int GroupID):scale(scale), GroupID(GroupID), levels_tree(new AVLRanktree(nullptr)), father(nullptr), group_size(1){}
+        Group(int GroupID, shared_ptr<AVLRanktree> tree_to_insert):scale(scale),
                 GroupID(GroupID), levels_tree(tree_to_insert), father(nullptr), group_size(1) {}
         Group(const Group& other) = default;
         ~Group() = default;
@@ -75,6 +75,12 @@ namespace DS{
         int getNumOfPlayersInRangeWithScore(int level1, int level2, int score);
 
         int getLevelOfPlayerM(int m);
+
+        Group* getFather();
+
+        void setFather(Group* new_father);
+
+        int getGroupSize();
     };
 
      
@@ -112,6 +118,21 @@ namespace DS{
     int Group::getLevelOfPlayerM(int m)
     {
         return levels_tree->getLevelOfPlayerM(m);
+    }
+
+    Group* Group::getFather()
+    {
+        return father;
+    }
+
+    void Group::setFather(Group* new_father)
+    {
+        father = new_father;
+    }
+
+    int Group::getGroupSize()
+    {
+        return group_size;
     }
 }
 
