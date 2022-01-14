@@ -44,7 +44,7 @@ namespace DS {
     
     Group* UF::Find(int Group_id)
     {
-        Group* iter = groups[Group_id];
+        Group* iter = groups[Group_id-1];
         Group* root;
         while(iter->getFather())
         {
@@ -52,9 +52,12 @@ namespace DS {
         }
         root = iter;
         iter = groups[Group_id-1];
+        Group *iter1 = iter;
         while(iter->getFather() != root)
         {
-            iter->setFather(root);
+            iter = iter->getFather();
+            iter1->setFather(root);
+            iter1 = iter;
         }
         return iter;
     }
