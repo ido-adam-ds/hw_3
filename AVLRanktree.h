@@ -40,7 +40,7 @@ namespace DS{
         int size;
         compareInts compare;
         int num_of_zero_level_players;
-        int zero_level_scores[MAX_SIZE];
+        int* zero_level_scores;
 
         int iterator;
 
@@ -76,13 +76,16 @@ namespace DS{
 
 
         //public:
-        AVLRanktree(AVLRanktree *pRanktree) : root(nullptr) , max(nullptr), size(0), iterator(0), num_of_zero_level_players(0)
+        AVLRanktree(/*AVLRanktree *pRanktree*/) : root(nullptr) , max(nullptr), size(0), iterator(0),
+         num_of_zero_level_players(0), compare(), zero_level_scores(new int[MAX_SIZE])
         {
             for (int i = 0; i < MAX_SIZE; ++i) {
                 zero_level_scores[i] = 0;
             }
         };
-        ~AVLRanktree();
+        ~AVLRanktree(){
+            delete[] zero_level_scores;
+        }
         void insert(int new_key);
         void remove(int key);
         void clear();
@@ -139,6 +142,14 @@ namespace DS{
             }
             printMaxPlayersInGroupsAux(root, Players, *numOfGroups);
             this->setIterator(0);
+        }
+
+        int getNumOfZeroLevelPlayers() const{
+            return num_of_zero_level_players;
+        }
+
+        int* getZeroLevelPlayers() const{
+            return zero_level_scores;
         }
 
     };

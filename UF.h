@@ -1,86 +1,63 @@
-//
-// Created by Iddo Petrank on 09/01/2022.
-//
-
-#ifndef WET2_UF_H
-#define WET2_UF_H
+#ifndef UF_H
+#define UF_H
 
 #include "Group.h"
+#include <memory>
+using std::shared_ptr;
 
+namespace DS{
 
-namespace DS {
-
-
-
-    
-    class UF {
-        Group** groups;
-        int num_groups;
-
+    class UF{
+    private:
+        int k;
+        shared_ptr<Group>* groups;
     public:
-        UF(int k): num_groups(k)
-        {
-            groups = (Group**)malloc(sizeof(Group*)*k);
-            for (int i = 0; i<k; i++)
-            {
-                Group* new_group = new Group(i+1);
-                groups[i] = new_group;
+        UF(int k): groups(new shared_ptr<Group>[k]){
+            for(int i = 0; i < k; i++){
+                shared_ptr<Group> group_to_insert(new Group(i));
+                groups[i] = group_to_insert;
             }
         }
-
-        ~UF()
-        {
-            for (int i = 0; i<num_groups; i++)
-            {
-                delete groups[i];
-            }
-            free(groups);
-        }
-
-        Group* Find(int Group_id);
+        Group* Find(int GroupID) const;
         void Union(int id1, int id2);
     };
 
-    
-    Group* UF::Find(int Group_id)
-    {
-        Group* iter = groups[Group_id-1];
-        Group* root;
+    Group* UF::Find(int GroupID) const{
+        Group* iter = groups[GroupID-1].get();
         while(iter->getFather())
         {
             iter = iter->getFather();
         }
-        root = iter;
-        iter = groups[Group_id-1];
-        Group *iter1 = iter;
-        while(iter->getFather() != root)
-        {
-            iter = iter->getFather();
-            iter1->setFather(root);
-            iter1 = iter;
+
+        //Shrinking paths
+        Group* root = iter;
+        iter = groups[GroupID-1].get();
+        Group* next_group;
+        while(iter->getFather()){
+            next_group = iter->getFather();
+            iter->setFather(root);
+            iter = next_group;
         }
+
         return iter;
     }
 
-    
     void UF::Union(int id1, int id2)
     {
         Group* group1 = Find(id1);
         Group* group2 = Find(id2);
-        //merge trees
-        if(group1->getGroupSize() < group2->getGroupSize())
+        if(group1->getSize() < group2->getSize())
         {
             group1->setFather(group2);
-            //insert merged tree
+            group2->mergeLevelsTreeWithAnotherGroup(group1);
+            group1->setLevelsTree(nullptr);
         } else{
             group2->setFather(group1);
-            //insert merged tree
+            group1->mergeLevelsTreeWithAnotherGroup(group2);
+            group2->setLevelsTree(nullptr);
         }
     }
 
-
-
 }
 
-
-#endif //WET2_UF_H
+#endif

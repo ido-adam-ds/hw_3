@@ -2,6 +2,9 @@
 #define GROUP_H
 
 #include "AVLRanktree.h"
+#include <memory>
+
+using std::shared_ptr;
 
 namespace DS{
 
@@ -10,22 +13,18 @@ namespace DS{
     private:
     
         int GroupID;
-        int scale;
         Group* father;
-        std::shared_ptr<AVLRanktree> levels_tree;
+        shared_ptr<AVLRanktree> levels_tree;
         int group_size;
 
-        //shared_ptr<AVLtree<shared_ptr<Player>, int, comparePlayers>> players;
-
     public:
-        explicit Group(int GroupID):scale(scale), GroupID(GroupID), levels_tree(new AVLRanktree(nullptr)), father(nullptr), group_size(1){}
-        Group(int GroupID, shared_ptr<AVLRanktree> tree_to_insert):scale(scale),
-                GroupID(GroupID), levels_tree(tree_to_insert), father(nullptr), group_size(1) {}
+        explicit Group(int GroupID) : GroupID(GroupID),
+         levels_tree(new AVLRanktree(nullptr)), father(nullptr), group_size(0){}
+        /*Group(int GroupID, shared_ptr<AVLRanktree> tree_to_insert): 
+                GroupID(GroupID), levels_tree(tree_to_insert), father(nullptr), group_size(tree_to_insert->getSize()){}*/
         Group(const Group& other) = default;
         ~Group() = default;
 
-       // void insertPlayer(int PlayerID, int score);
-        //void increseLevel(int level, int score);
         int getGroupId() const{
             return GroupID;
         }
@@ -38,31 +37,9 @@ namespace DS{
             return levels_tree->getNumOfPlayersInTree();
         }
 
- /*       void addPlayer(shared_ptr<Player> player_to_insert){
-            players->insert(player_to_insert, player_to_insert->getPlayerID());
+        int getSize() const{
+            return group_size;
         }
-
-        void RemovePlayer(shared_ptr<Player> player_to_remove){
-            players->remove(player_to_remove);
-        }
-
-        void getHighestPlayer(int* PlayerID) const{
-            *PlayerID = players->getMax()->key->getPlayerID();
-        }
-
-        int getHighestPlayer() const{
-            return players->getMax()->key->getPlayerID();
-        }
-
-        void getAllPlayersByLevel(int** Players, int* numOfPlayers){
-            players->printPlayersByLevel(Players, numOfPlayers);
-        }
-
-        shared_ptr<AVLtree<shared_ptr<Player>, int, comparePlayers>> getPlayersTree(){
-            return players;
-        }
-*/
-
 
         void insertPlayer(int score);
 
@@ -76,11 +53,23 @@ namespace DS{
 
         int getLevelOfPlayerM(int m);
 
-        Group* getFather();
+        Group* getFather() const{
+            return father;
+        }
 
-        void setFather(Group* new_father);
+        void setFather(Group* new_father){
+            father = new_father;
+        }
 
-        int getGroupSize();
+        shared_ptr<AVLRanktree> getLevelsTree() const{
+            return levels_tree;
+        }
+
+        void setLevelsTree(shared_ptr<AVLRanktree> new_levels_tree){
+            levels_tree = new_levels_tree;
+        }
+
+        void mergeLevelsTreeWithAnotherGroup(Group* other_group);
     };
 
      
@@ -118,21 +107,6 @@ namespace DS{
     int Group::getLevelOfPlayerM(int m)
     {
         return levels_tree->getLevelOfPlayerM(m);
-    }
-
-    Group* Group::getFather()
-    {
-        return father;
-    }
-
-    void Group::setFather(Group* new_father)
-    {
-        father = new_father;
-    }
-
-    int Group::getGroupSize()
-    {
-        return group_size;
     }
 }
 
