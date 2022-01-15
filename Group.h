@@ -19,7 +19,7 @@ namespace DS{
 
     public:
         explicit Group(int GroupID) : GroupID(GroupID),
-         levels_tree(new AVLRanktree(nullptr)), father(nullptr), group_size(0){}
+         levels_tree(new AVLRanktree()), father(nullptr), group_size(0){}
         /*Group(int GroupID, shared_ptr<AVLRanktree> tree_to_insert): 
                 GroupID(GroupID), levels_tree(tree_to_insert), father(nullptr), group_size(tree_to_insert->getSize()){}*/
         Group(const Group& other) = default;
