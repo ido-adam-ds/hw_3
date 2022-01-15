@@ -8,8 +8,16 @@
 
 #include <ostream>
 namespace DS{
-    
-    
+
+    static void copyArray1(int *dst, int *src)
+    {
+        for (int i = 0; i < MAX_SIZE; ++i) {
+            dst[i] = src[i];
+        }
+    }
+
+
+
     struct AVLnode {
 
         int key;
@@ -231,7 +239,7 @@ namespace DS{
         else return getWeightedSum(node) - getWeightedSum(node->left_son) - getWeightedSum(node->right_son);
     }
     
-    void addScores(  int *dst, const AVLnode *node1, const AVLnode *node2)
+    void addScores(int *dst, const AVLnode *node1, const AVLnode *node2)
     {
         if (dst == nullptr) return;
         if(node1 == nullptr && node2 == nullptr)
@@ -306,6 +314,7 @@ namespace DS{
             return;
         }
         addScores(scores, node->right_son, node->left_son);
+        copyArray1(node->scores, scores);
         node->weighted_sum = getWeightedSum(node->right_son)+getWeightedSum(node->left_son)+ sum_level;
         node->player_weight = getAllPlayersWeight(node->right_son)+ getAllPlayersWeight(node->left_son)+ current_player_num;
     }
