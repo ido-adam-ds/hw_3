@@ -148,15 +148,6 @@ namespace DS{
             return num_of_zero_level_players;
         }
 
-        int* getZeroLevelPlayers() const{
-            return zero_level_scores;
-        }
-
-        void addZeroLevelPlayer(int PlayerID, int GroupID, int score){
-            zero_level_scores[score]++;
-            num_of_zero_level_players++;
-        }
-
     };
 
     
