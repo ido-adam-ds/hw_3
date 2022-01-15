@@ -152,6 +152,11 @@ namespace DS{
             return zero_level_scores;
         }
 
+        void addZeroLevelPlayer(int PlayerID, int GroupID, int score){
+            zero_level_scores[score]++;
+            num_of_zero_level_players++;
+        }
+
     };
 
     
