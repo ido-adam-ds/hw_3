@@ -605,7 +605,6 @@ int AVLRanktree::getNumOfPlayersInTree()
 
 int AVLRanktree::getLevelOfPlayerM(int m) 
 {
-    std::cout << getNumOfPlayersInTree();
     if(m > getNumOfPlayersInTree())
     {
         return -1;
