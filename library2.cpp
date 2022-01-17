@@ -103,7 +103,7 @@ StatusType ChangePlayerIDScore(void* DS, int PlayerID, int NewScore){
 
 StatusType GetPercentOfPlayersWithScoreInBounds(void* DS, int GroupID, int score,
      int LowerLevel, int higherLevel, double* players){
-    if(DS == NULL || players == NULL || GroupID < 0 ||
+    if(DS == NULL || players == NULL || GroupID < 0 || 
         (DS != NULL && ((PlayersManager*)DS)->getNumOfGroups() < GroupID)){
         return StatusType::INVALID_INPUT;
     }

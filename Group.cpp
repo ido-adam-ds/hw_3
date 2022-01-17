@@ -27,7 +27,6 @@ static void deleteTreeArray(AVLnode** array, int size);
 void Group::insertPlayer(int score)
 {
     levels_tree->addPlayer(0, score);
-    group_size++;
 }
 
     
@@ -41,7 +40,6 @@ void Group::increaseLevel(int old_level, int new_level, int score)
 void Group::removePlayer(int level, int score)
 {
     levels_tree->removePlayer(level, score);
-    group_size--;
 }
 
 

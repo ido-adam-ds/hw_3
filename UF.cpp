@@ -26,6 +26,9 @@ void UF::Union(int id1, int id2)
 {
     Group* group1 = Find(id1);
     Group* group2 = Find(id2);
+    if(group1 == group2){
+        return;
+    }
     if(group1->getSize() < group2->getSize())
     {
         group1->setFather(group2);

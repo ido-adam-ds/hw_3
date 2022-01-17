@@ -67,6 +67,9 @@ void PlayersManager::ChangePlayerIDScore(int PlayerID, int NewScore){
 
 void PlayersManager::GetPercentOfPlayersWithScoreInBounds(int GroupID, int score,
                      int lowerLevel, int higherLevel, double* players){
+    if(higherLevel < lowerLevel){
+        throw Failure();
+    }
     if(GroupID == 0){
         int total_players_in_range =
              all_players_levels_tree.getNumOfPlayersInRange(lowerLevel, higherLevel);
@@ -87,8 +90,8 @@ void PlayersManager::GetPercentOfPlayersWithScoreInBounds(int GroupID, int score
         }
         int num_of_players_in_group_with_score_in_range = 
             group_to_find->getLevelsTree()->getNumOfPlayersWithScoreInRange(lowerLevel, higherLevel, score);
-        *players = (double)(((double)players_of_group_in_range/
-            (double)num_of_players_in_group_with_score_in_range)*100.0);
+        *players = (double)(((double)num_of_players_in_group_with_score_in_range/
+            (double)players_of_group_in_range)*100.0);
     }
 }
 

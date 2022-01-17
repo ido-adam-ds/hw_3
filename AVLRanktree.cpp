@@ -531,7 +531,8 @@ void AVLRanktree::removePlayer(int level, int score)
     else {
 
         Node thisLevel = search(root, level, false);
-        int num_of_players_in_level = getAllPlayersWeight(thisLevel) - getAllPlayersWeight(thisLevel->right_son) - getAllPlayersWeight(thisLevel->left_son);
+        int num_of_players_in_level = getAllPlayersWeight(thisLevel) - 
+            getAllPlayersWeight(thisLevel->right_son) - getAllPlayersWeight(thisLevel->left_son);
         if(num_of_players_in_level == 1)
         {
             updateWeightsForSinglePlayer(level, score, false);
@@ -604,6 +605,7 @@ int AVLRanktree::getNumOfPlayersInTree()
 
 int AVLRanktree::getLevelOfPlayerM(int m) 
 {
+    std::cout << getNumOfPlayersInTree();
     if(m > getNumOfPlayersInTree())
     {
         return -1;
@@ -632,22 +634,34 @@ int AVLRanktree::getLevelOfPlayerM(int m)
 
 int AVLRanktree::getNumOfPlayersInRange(int level1, int level2)
 {
+    /*if(level1 == 0 && level2 == 0){
+        return num_of_zero_level_players;
+    }*/
     int sum = numOfPlayersWithLowerLevel(level2) - numOfPlayersWithLowerLevel(level1);
     Node level1_node = doesKeyExists(level1);
     if(level1_node)
     {
         sum += getNumPlayers(level1_node);
     }
+    else if(level1 == 0){
+        sum += num_of_zero_level_players;
+    }
     return sum;
 }
 
 int AVLRanktree::getNumOfPlayersWithScoreInRange(int level1, int level2, int score)
 {
+    /*if(level1 == 0 && level2 == 0){
+        return zero_level_scores[score];
+    }*/
     int sum = numOfPlayesWithScoreAndLowerLevel(level2, score) - numOfPlayesWithScoreAndLowerLevel(level1, score);
     Node level1_node = doesKeyExists(level1);
     if(level1_node)
     {
         sum += getNumPlayersWithScore(level1_node, score);
+    }
+    else if(level1 == 0){
+        sum += zero_level_scores[score];
     }
     return sum;
 }
