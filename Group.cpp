@@ -91,6 +91,7 @@ static AVLnode* buildTreeFromSortedArrayAux(AVLnode** array, int start, int end)
     }
     int mid = (start + end)/2;
     AVLnode* root = new AVLnode(array[mid]->key);
+    root->player_weight = array[mid]->player_weight;
     root->left_son = buildTreeFromSortedArrayAux(array, start, mid - 1);
     root->right_son = buildTreeFromSortedArrayAux(array, mid + 1, end);
     root->weighted_sum += (root->key)*(root->player_weight);
@@ -215,7 +216,9 @@ static void traverseTreeToListAux(shared_ptr<AVLRanktree> tree, AVLnode** array,
     }
     traverseTreeToListAux(tree, array, node->left_son);
     AVLnode* node_to_insert = new AVLnode(node->key);
-    levelScores(node_to_insert->scores, node->left_son, node->right_son);
+    for(int score = 0; score < MAX_SIZE; score++){
+        node_to_insert->scores[score] = getNumPlayersWithScore(node, score);
+    }
     node_to_insert->player_weight = getNumPlayers(node);
     array[tree->getIterator()] = node_to_insert;
     tree->setIterator(tree->getIterator() + 1);
