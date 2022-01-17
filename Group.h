@@ -43,7 +43,7 @@ namespace DS{
 
         void insertPlayer(int score);
 
-        void increseLevel(int old_level, int new_level, int score);
+        void increaseLevel(int old_level, int new_level, int score);
 
         void removePlayer(int level, int score);
 
@@ -71,43 +71,8 @@ namespace DS{
 
         void mergeLevelsTreeWithAnotherGroup(Group* other_group);
     };
+    
 
-     
-    void Group::insertPlayer(int score)
-    {
-        levels_tree->addPlayer(0, score);
-    }
-
-     
-    void Group::increseLevel(int old_level, int new_level, int score)
-    {
-        levels_tree->removePlayer(old_level, score);
-        levels_tree->addPlayer(new_level, score);
-    }
-
-     
-    void Group::removePlayer(int level, int score)
-    {
-        levels_tree->removePlayer(level, score);
-    }
-
-
-    int Group::getNumOfPlayersInRange(int level1, int level2)
-    {
-        return levels_tree->getNumOfPlayersInRange(level1, level2);
-    }
-
-    int Group::getNumOfPlayersInRangeWithScore(int level1, int level2, int score)
-
-    {
-        return levels_tree->getNumOfPlayersWithScoreInRange(level1, level2 ,score);
-    }
-
-
-    int Group::getLevelOfPlayerM(int m)
-    {
-        return levels_tree->getLevelOfPlayerM(m);
-    }
 }
 
 #endif

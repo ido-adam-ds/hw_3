@@ -179,7 +179,7 @@ namespace DS{
 
     } ;
     
-    int getAllPlayersWeight( const AVLnode *node)
+    static int getAllPlayersWeight( const AVLnode *node)
     {
         if(node == nullptr)
         {
@@ -190,7 +190,7 @@ namespace DS{
 
 
     
-    int getScorePlayersWeight( const AVLnode *node, int score)
+    static int getScorePlayersWeight( const AVLnode *node, int score)
     {
         if(node == nullptr)
         {
@@ -200,7 +200,7 @@ namespace DS{
     }
 
     
-    int getWeightedSum( const AVLnode *node)
+    static int getWeightedSum( const AVLnode *node)
     {
         if(node == nullptr)
         {
@@ -211,7 +211,7 @@ namespace DS{
 
 
     
-    int getNumPlayers( const AVLnode *node)
+    static int getNumPlayers( const AVLnode *node)
     {
         if(node == nullptr)
         {
@@ -221,7 +221,7 @@ namespace DS{
     }
 
     
-    int getNumPlayersWithScore( const AVLnode *node, int score)
+    static int getNumPlayersWithScore( const AVLnode *node, int score)
     {
         if(node == nullptr)
         {
@@ -230,7 +230,7 @@ namespace DS{
         else return getScorePlayersWeight(node,score) - getScorePlayersWeight(node->left_son,score) - getScorePlayersWeight(node->right_son,score);
     }
 
-    int getSumOfLevel( const AVLnode *node)
+    static int getSumOfLevel( const AVLnode *node)
     {
         if(node == nullptr)
         {
@@ -239,7 +239,7 @@ namespace DS{
         else return getWeightedSum(node) - getWeightedSum(node->left_son) - getWeightedSum(node->right_son);
     }
     
-    void addScores(int *dst, const AVLnode *node1, const AVLnode *node2)
+    static void addScores(int *dst, const AVLnode *node1, const AVLnode *node2)
     {
         if (dst == nullptr) return;
         if(node1 == nullptr && node2 == nullptr)
@@ -273,7 +273,7 @@ namespace DS{
     }
 
 
-    void levelScores(  int *dst, const AVLnode *node1, const AVLnode *node2)
+    static void levelScores(  int *dst, const AVLnode *node1, const AVLnode *node2)
     {
         if (dst == nullptr) return;
         if(node1 == nullptr && node2 == nullptr)
@@ -308,7 +308,7 @@ namespace DS{
 
 
 
-    void updateWeights(AVLnode *node, int current_player_num,int sum_level, int* scores)
+    static void updateWeights(AVLnode *node, int current_player_num,int sum_level, int* scores)
     {
         if(node == nullptr) {
             return;
@@ -318,6 +318,7 @@ namespace DS{
         node->weighted_sum = getWeightedSum(node->right_son)+getWeightedSum(node->left_son)+ sum_level;
         node->player_weight = getAllPlayersWeight(node->right_son)+ getAllPlayersWeight(node->left_son)+ current_player_num;
     }
+    
 }
 
 #endif //WET1_AVLNODE_H

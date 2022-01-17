@@ -1,7 +1,7 @@
 #ifndef LINKED_LIST
 #define LINKED_LIST
 
-#include "Exceptoins.h"
+#include "Exceptions.h"
 
 namespace DS{
 

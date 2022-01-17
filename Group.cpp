@@ -24,6 +24,52 @@ static shared_ptr<AVLRanktree> buildTreeFromTrees(shared_ptr<AVLRanktree> first_
 static void deleteTreeArray(AVLnode** array, int size);
 
 
+void Group::insertPlayer(int score)
+{
+    levels_tree->addPlayer(0, score);
+    group_size++;
+}
+
+    
+void Group::increaseLevel(int old_level, int new_level, int score)
+{
+    levels_tree->removePlayer(old_level, score);
+    levels_tree->addPlayer(new_level, score);
+}
+
+    
+void Group::removePlayer(int level, int score)
+{
+    levels_tree->removePlayer(level, score);
+    group_size--;
+}
+
+
+int Group::getNumOfPlayersInRange(int level1, int level2)
+{
+    return levels_tree->getNumOfPlayersInRange(level1, level2);
+}
+
+int Group::getNumOfPlayersInRangeWithScore(int level1, int level2, int score)
+
+{
+    return levels_tree->getNumOfPlayersWithScoreInRange(level1, level2 ,score);
+}
+
+
+int Group::getLevelOfPlayerM(int m)
+{
+    return levels_tree->getLevelOfPlayerM(m);
+}
+
+static void deleteTreeArray(AVLnode** array, int size){
+    for(int i = 0; i < size; i++){
+        delete array[i];
+    }
+    delete[] array;
+}
+
+
 static int updateHeightsInTree(AVLnode* node){
     if(node == nullptr){
         return -1;
@@ -71,29 +117,34 @@ static shared_ptr<AVLRanktree> buildTreeFromSortedArray(AVLnode** array,
                         int* first_zero_level_players, int* second_zero_level_players,
                                 int total_zero_level_players, int size){
     shared_ptr<AVLRanktree> result_tree(new AVLRanktree());
-    result_tree->setRoot(buildTreeFromSortedArrayAux(array, 0, size - 1));
-    AVLnode* iter = result_tree->getRoot();
-    AVLnode* prev = iter;
-    AVLnode* max_to_insert;
-    while(iter){
-        prev = iter;
-        iter = iter -> right_son;
+    if(array[0]){
+        result_tree->setRoot(buildTreeFromSortedArrayAux(array, 0, size - 1));
+        AVLnode* iter = result_tree->getRoot();
+        AVLnode* prev = iter;
+        AVLnode* max_to_insert;
+        while(iter){
+            prev = iter;
+            iter = iter -> right_son;
+        }
+        max_to_insert = prev;
+        result_tree->setMax(max_to_insert);
+        updateHeightsInTree(result_tree->getRoot());
     }
-    max_to_insert = prev;
-    result_tree->setMax(max_to_insert);
-    result_tree->setSize(size);
-    result_tree -> setIterator(0);
-    updateHeightsInTree(result_tree->getRoot());
     for(int score = 0; score < MAX_SIZE; score++){
-        result_tree->getZeroLevelPlayers()[score] = first_zero_level_players[score] + second_zero_level_players[score];
+        result_tree->getZeroLevelPlayersArray()[score] =
+             first_zero_level_players[score] + second_zero_level_players[score];
     }
+    result_tree -> setIterator(0);
+    result_tree->setNumOfZeroLevelPlayers(total_zero_level_players);
+    result_tree->setSize(size);
     return result_tree;
 }
 
 static void mergeArraysAux(AVLnode** first_array, AVLnode** second_array,
                          int size_of_first, int size_of_second, AVLnode** merged){
     int i = 0, j = 0, k = 0;
-    while(i < size_of_first && j < size_of_second){
+    while(i < size_of_first && j < size_of_second &&
+         first_array[i] && second_array[j]){
         if(first_array[i]->key < second_array[j]->key){
             //merged[k++] = first_array[i++];
             AVLnode* node_to_insert = new AVLnode(first_array[i]->key);
@@ -126,7 +177,7 @@ static void mergeArraysAux(AVLnode** first_array, AVLnode** second_array,
             j++;
         }
     }
-    while(i < size_of_first){
+    while(i < size_of_first && first_array[i]){
         //merged[k++] = first_array[i++];
         AVLnode* node_to_insert = new AVLnode(first_array[i]->key);
         for(int score = 0; score < MAX_SIZE; score++){
@@ -136,7 +187,7 @@ static void mergeArraysAux(AVLnode** first_array, AVLnode** second_array,
         merged[k++] = node_to_insert;
         i++;
     }
-    while(j < size_of_second){
+    while(j < size_of_second && second_array[j]){
         //merged[k++] = second_array[j++];
         AVLnode* node_to_insert = new AVLnode(second_array[j]->key);
         for(int score = 0; score < MAX_SIZE; score++){
@@ -150,7 +201,10 @@ static void mergeArraysAux(AVLnode** first_array, AVLnode** second_array,
 
 static AVLnode** mergeArrays(AVLnode** first_array, AVLnode** second_array,
                                          int size_of_first, int size_of_second){
-    AVLnode** merged = new AVLnode*[size_of_first+size_of_second];
+    AVLnode** merged = new AVLnode*[size_of_first+size_of_second+1];
+    for(int i = 0; i < size_of_first+size_of_second+1; i++){
+        merged[i] = nullptr;
+    }
     mergeArraysAux(first_array, second_array, size_of_first, size_of_second, merged);
     return merged;
 }
@@ -169,29 +223,40 @@ static void traverseTreeToListAux(shared_ptr<AVLRanktree> tree, AVLnode** array,
 }
 
 static AVLnode** traverseTreeToList(shared_ptr<AVLRanktree> tree){
-    AVLnode** array = new AVLnode*[tree->getSize()];
+    AVLnode** array = new AVLnode*[tree->getSize()+1];
+    for(int i = 0; i < tree->getSize()+1; i++){
+        array[i] = nullptr;
+    }
     traverseTreeToListAux(tree, array, tree->getRoot());
     tree->setIterator(0);
     return array;
 }
 
-static shared_ptr<AVLRanktree> buildTreeFromTrees(shared_ptr<AVLRanktree> first_tree, shared_ptr<AVLRanktree> second_tree){
+static shared_ptr<AVLRanktree> buildTreeFromTrees(shared_ptr<AVLRanktree> first_tree,
+            shared_ptr<AVLRanktree> second_tree){
     AVLnode** first_array = traverseTreeToList(first_tree);
     AVLnode** second_array = traverseTreeToList(second_tree);
     AVLnode** merged = mergeArrays(first_array, second_array,
-                             first_tree->getSize(), second_tree->getSize());
+        first_tree->getSize(), second_tree->getSize());
+    int actual_size = 0;
+    for(int j = 0; j < first_tree->getSize()+second_tree->getSize(); j++){
+        if(merged[j] != nullptr){
+            actual_size++;
+        }
+    }
     shared_ptr<AVLRanktree> result_tree = buildTreeFromSortedArray(merged,
-         first_tree->getZeroLevelPlayers(), second_tree->getZeroLevelPlayers(),
+         first_tree->getZeroLevelPlayersArray(), second_tree->getZeroLevelPlayersArray(),
           first_tree->getNumOfZeroLevelPlayers()+second_tree->getNumOfZeroLevelPlayers(),
-                first_tree->getSize()+second_tree->getSize());
-    deleteTreeArray(first_array, first_tree->getSize());
-    deleteTreeArray(second_array, second_tree->getSize());
-    deleteTreeArray(merged, first_tree->getSize() + second_tree->getSize());
+            actual_size);
+    deleteTreeArray(first_array, first_tree->getSize()+1);
+    deleteTreeArray(second_array, second_tree->getSize()+1);
+    deleteTreeArray(merged, first_tree->getSize() + second_tree->getSize() + 1);
     return result_tree;
 }
 
 void Group::mergeLevelsTreeWithAnotherGroup(Group* other_group){
-    shared_ptr<AVLRanktree> merged_tree = buildTreeFromTrees(levels_tree, other_group->getLevelsTree());
+    shared_ptr<AVLRanktree> merged_tree = buildTreeFromTrees(levels_tree,
+         other_group->getLevelsTree());
     group_size += other_group->getSize();
     levels_tree = merged_tree;
 }
