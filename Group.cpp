@@ -95,14 +95,15 @@ static AVLnode* buildTreeFromSortedArrayAux(AVLnode** array, int start, int end)
     }
     root->left_son = buildTreeFromSortedArrayAux(array, start, mid - 1);
     root->right_son = buildTreeFromSortedArrayAux(array, mid + 1, end);
-    root->weighted_sum += (root->key)*(root->player_weight);
+    //root->weighted_sum += (root->key)*(root->player_weight);
+
     if(root->right_son){
         root->right_son->father = root;
         for(int score = 0; score < MAX_SIZE; score++){
             root->scores[score] += root->right_son->scores[score];
         }
         root->player_weight += root->right_son->player_weight;
-        root->weighted_sum += (root->right_son->key)*(root->right_son->player_weight);
+        //root->weighted_sum += (root->right_son->key)*(root->right_son->player_weight);
     }
     if(root->left_son){
         root->left_son->father = root;
@@ -110,9 +111,10 @@ static AVLnode* buildTreeFromSortedArrayAux(AVLnode** array, int start, int end)
             root->scores[score] += root->left_son->scores[score];
         }
         root->player_weight += root->left_son->player_weight;
-        root->weighted_sum += (root->left_son->key)*(root->left_son->player_weight);
+        //root->weighted_sum += (root->left_son->key)*(root->left_son->player_weight);
     }
 
+    root->weighted_sum = getWeightedSum(root->right_son)+getWeightedSum(root->left_son) + getNumPlayers(root)*root->key;
     return root;
 }
 
