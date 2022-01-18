@@ -90,6 +90,9 @@ static AVLnode* buildTreeFromSortedArrayAux(AVLnode** array, int start, int end)
     int mid = (start + end)/2;
     AVLnode* root = new AVLnode(array[mid]->key);
     root->player_weight = array[mid]->player_weight;
+    for(int score = 0; score < MAX_SIZE; score++){
+        root->scores[score] = array[mid]->scores[score];
+    }
     root->left_son = buildTreeFromSortedArrayAux(array, start, mid - 1);
     root->right_son = buildTreeFromSortedArrayAux(array, mid + 1, end);
     root->weighted_sum += (root->key)*(root->player_weight);
@@ -109,6 +112,7 @@ static AVLnode* buildTreeFromSortedArrayAux(AVLnode** array, int start, int end)
         root->player_weight += root->left_son->player_weight;
         root->weighted_sum += (root->left_son->key)*(root->left_son->player_weight);
     }
+
     return root;
 }
 

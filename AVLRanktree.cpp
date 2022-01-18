@@ -16,8 +16,8 @@ AVLnode* AVLRanktree::LLrotate(Node node) {
     levelScores(node_scores, node->right_son, node->left_son);
 
 
-    int node_right_level_sum = getSumOfLevel(node->right_son);
-    int node_right_players_num = getNumPlayers(node->right_son);
+    int node_right_level_sum = getSumOfLevel(left_son);
+    int node_right_players_num = getNumPlayers(left_son);
     int node_right_scores[MAX_SIZE];
     copyArray(node_right_scores, left_son->scores);
     levelScores(node_right_scores, left_son->right_son, left_son->left_son);
@@ -56,8 +56,8 @@ AVLnode* AVLRanktree::RRrotate(Node node) {
     levelScores(node_scores, node->right_son, node->left_son);
 
 
-    int node_right_level_sum = getSumOfLevel(node->right_son);
-    int node_right_players_num = getNumPlayers(node->right_son);
+    int node_right_level_sum = getSumOfLevel(right_son);
+    int node_right_players_num = getNumPlayers(right_son);
     int node_right_scores[MAX_SIZE];
     copyArray(node_right_scores, right_son->scores);
     levelScores(node_right_scores, right_son->right_son, right_son->left_son);
@@ -199,12 +199,14 @@ void AVLRanktree::remove(int key)
     if(has_left_son && has_right_son)
     {
         to_swap = nextNodeInOrder(to_remove);
+        handleWeights(to_remove, to_swap);
 
         swap(to_remove, to_swap);
         if (root == to_remove)
         {
             root = to_swap;
         }
+
     //   to_remove = to_swap;
 
     }
@@ -301,12 +303,129 @@ AVLnode* AVLRanktree::nextNodeInOrder(Node node)
     {
         return nullptr;
     }
-    Node* iter = &((node)->right_son);
-    while((*iter)->left_son)
+
+    Node iter = ((node)->right_son);
+    while((iter)->left_son)
     {
-        iter = &((*iter)->left_son);
+
+        iter = ((iter)->left_son);
     }
-    return *iter;
+    return iter;
+
+}
+
+void AVLRanktree::handleWeights(Node node, Node dst)
+{
+    int dst_players = getNumPlayers(dst);
+
+    int dst_player_sum = getSumOfLevel(dst);
+
+
+    int dst_scores[MAX_SIZE];
+    for(int score = 0; score < MAX_SIZE; score++){
+        dst_scores[score] = getNumPlayersWithScore(dst, score);
+    }
+
+    swapWeights(node, dst);
+
+
+    Node iter = ((node)->right_son);
+    while((iter)->left_son && iter != dst)
+    {
+        handleMiddlePlayerWeight(iter, dst_players);
+        handleMiddlePlayerSumWeight(iter, dst_player_sum);
+        handleMiddlePlayerScores(iter, dst_scores);
+        iter = ((iter)->left_son);
+    }
+}
+
+void AVLRanktree::handleMiddlePlayerWeight( Node iter,  int dst_players)
+{
+
+    iter->player_weight -=dst_players;
+}
+
+void AVLRanktree::handleMiddlePlayerSumWeight( Node iter,  int dst_players)
+{
+
+    iter->weighted_sum -=dst_players;
+}
+
+void AVLRanktree::handleMiddlePlayerScores( Node iter, int *dst_scores)
+{
+
+    for(int score = 0; score < MAX_SIZE; score++){
+        iter->scores[score]-= dst_scores[score];
+    }
+
+
+}
+
+
+
+ void AVLRanktree::swapPlayerWeight(AVLnode* root, AVLnode* new_root)
+{
+    new_root->player_weight = root->player_weight;
+//
+//    int temp_root_players = getNumPlayers(root);
+//    int temp_new_root_players = getNumPlayers(new_root);
+//    int root_weight = root->player_weight;
+//
+//    root->player_weight = new_root->player_weight+temp_root_players-temp_new_root_players;
+//    new_root->player_weight = root_weight+temp_new_root_players-temp_root_players;
+
+}
+void AVLRanktree::swapPlayerSumWeight(AVLnode* root, AVLnode* new_root)
+{
+    new_root->weighted_sum = root->weighted_sum;
+//
+//    int temp_root_players = getSumOfLevel(root);
+//    int temp_new_root_players = getSumOfLevel(new_root);
+//    int root_weight = root->weighted_sum;
+//
+//    root->weighted_sum = new_root->weighted_sum+temp_root_players-temp_new_root_players;
+//    new_root->weighted_sum = root_weight+temp_new_root_players-temp_root_players;
+
+}
+
+void AVLRanktree::swapPlayerScores(AVLnode* root, AVLnode* new_root)
+{
+    for(int score = 0; score < MAX_SIZE; score++){
+        new_root->scores[score] = root->scores[score];
+    }
+//
+//    int temp_root_scores[MAX_SIZE];
+//    for(int score = 0; score < MAX_SIZE; score++){
+//        temp_root_scores[score] = getNumPlayersWithScore(root, score);
+//    }
+//
+//    int temp_new_root_scores[MAX_SIZE];
+//    for(int score = 0; score < MAX_SIZE; score++){
+//        temp_new_root_scores[score] = getNumPlayersWithScore(new_root, score);
+//    }
+//
+//    int temp_scores[MAX_SIZE];
+//    for(int score = 0; score < MAX_SIZE; score++){
+//        temp_new_root_scores[score] = root->scores[score];
+//    }
+//
+//    for(int score = 0; score < MAX_SIZE; score++){
+//        root->scores[score] = new_root->scores[score]+temp_root_scores[score]-temp_new_root_scores[score];
+//    }
+//
+//    for(int score = 0; score < MAX_SIZE; score++){
+//        new_root->scores[score] = temp_scores[score]-temp_root_scores[score]+temp_new_root_scores[score];
+//    }
+//
+
+}
+
+void AVLRanktree::swapWeights(AVLnode* root, AVLnode* new_root)
+{
+    swapPlayerSumWeight(root, new_root);
+    swapPlayerScores(root, new_root);
+    swapPlayerWeight(root, new_root);
+
 
 }
 
