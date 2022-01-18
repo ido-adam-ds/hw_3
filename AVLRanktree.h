@@ -71,6 +71,19 @@ namespace DS{
         int getNumOfPlayersWithScoreInRange(int level1, int level2, int score);
         int getNumOfPlayersInRange(int level1, int level2);
         int getLevelOfPlayerM(int m);
+        void swapWeights(AVLnode* root, AVLnode* new_root);
+        void swapPlayerScores(AVLnode* root, AVLnode* new_root);
+        void swapPlayerSumWeight(AVLnode* root, AVLnode* new_root);
+        void swapPlayerWeight(AVLnode* root, AVLnode* new_root);
+        void handleMiddlePlayerScores( Node iter,  int *dst_scores);
+        void handleMiddlePlayerSumWeight( Node iter,  int dst_players);
+        void handleMiddlePlayerWeight( Node iter,  int dst_players);
+        void handleWeights(Node node, Node dst);
+
+
+
+
+
 
 
 
