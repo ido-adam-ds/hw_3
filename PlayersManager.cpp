@@ -11,6 +11,11 @@ void PlayersManager::AddPlayer(int PlayerID, int GroupID, int score){
     if(player_to_find != nullptr){
         throw Failure();
     }
+    if(score == 64)
+    {
+        printf("");
+
+    }
     shared_ptr<Player> player_to_insert(new Player(PlayerID, GroupID, score));
     players.insert(player_to_insert);
     Group* group_to_find = groups.Find(GroupID);
@@ -24,6 +29,8 @@ void PlayersManager::RemovePlayer(int PlayerID){
         throw Failure();
     }
     Group* group_to_find = groups.Find(player_to_remove->getGroupID());
+    if(player_to_remove->getPlayerLevel()==64)
+        printf("");
     group_to_find->removePlayer(player_to_remove->getPlayerLevel(),
          player_to_remove->getPlayerScore());
     all_players_levels_tree.removePlayer(player_to_remove->getPlayerLevel(),
@@ -36,6 +43,8 @@ void PlayersManager::IncreasePlayerIDLevel(int PlayerID, int LevelIncrease){
     if(player_to_increase == nullptr){
         throw Failure();
     }
+    if(player_to_increase->getPlayerScore() == 64)
+        printf("");
     int new_level = player_to_increase->getPlayerLevel() + LevelIncrease;
     Group* group_to_find = groups.Find(player_to_increase->getGroupID());
     group_to_find->increaseLevel(player_to_increase->getPlayerLevel(),
@@ -51,6 +60,12 @@ void PlayersManager::ChangePlayerIDScore(int PlayerID, int NewScore){
     shared_ptr<Player> player_to_change = players.find(PlayerID);
     if(player_to_change == nullptr){
         throw Failure();
+    }
+    if(NewScore == 64){
+        printf("");
+    }
+    if(player_to_change->getPlayerScore() == 64){
+        printf("");
     }
     Group* group_to_find = groups.Find(player_to_change->getGroupID());
 
@@ -116,32 +131,36 @@ void PlayersManager::GetPercentOfPlayersWithScoreInBounds(int GroupID, int score
 
 static int findWeightOfMFirstPlayers(AVLRanktree* tree, AVLnode* node,
                 int m, int level_of_m_th_player){
-    int current_player_weight = 0, result = 0;
-    AVLnode* iter = node;
-    if(iter!=nullptr){
-        current_player_weight = iter->player_weight;
-        result = iter->weighted_sum;
-    }
+    int result = getWeightedSum(tree->getRoot());
+    if(level_of_m_th_player == 0)
+        return result;
+    int diff = 0;
+    result -= tree->sumOfPlayersWithLowerLevel(level_of_m_th_player, &diff);
+     diff = getAllPlayersWeight(tree->getRoot())+tree->getNumOfZeroLevelPlayers() - tree->numOfPlayersWithLowerLevel(level_of_m_th_player);
+
+    diff = m-diff;
+//    res -= getWeightedSum(node->left_son);
+//    int diff = m - getAllPlayersWeight(node->right_son);
+//    int extra = getNumPlayers(node) - diff;
+    result += node->key*diff;
+    return result;
+//
+
+
+    int current_player_weight = 0;//, result = 0;
+    AVLnode* iter = tree->getRoot();
+//    if(iter!=nullptr){
+//        current_player_weight = iter->player_weight;
+//        result = iter->weighted_sum;
+//    }
     while(iter){
         if(iter->key < level_of_m_th_player){
-            if(iter->left_son){
-                current_player_weight -= iter->left_son->player_weight;
-                result -= iter->left_son->weighted_sum;
-            }
-            current_player_weight -= getNumPlayers(iter);
-            result -= (iter->key)*getNumPlayers(iter);
+            result-= getWeightedSum(iter->left_son);
+            result-= getSumOfLevel(iter);
             iter = iter->right_son;
         }
         else if(iter->key > level_of_m_th_player){
             iter = iter->left_son;
-        }
-        else{
-            int diff = current_player_weight - m;
-            result -= diff*(iter->key);
-            if(iter->left_son){
-                result -= iter->left_son->weighted_sum;
-            }
-            break;
         }
     }
     return result;
@@ -155,7 +174,7 @@ void PlayersManager::AverageHighestPlayerLevelByGroup(int GroupID, int m, double
         }
         double weighted_sum_of_first_m_players = 
             (double)findWeightOfMFirstPlayers(&all_players_levels_tree,
-             all_players_levels_tree.getRoot(), m, level_of_m_th_player);
+             all_players_levels_tree.doesKeyExists(level_of_m_th_player), m, level_of_m_th_player);
         *level = weighted_sum_of_first_m_players/((double)m);
     }
     else{
@@ -166,7 +185,7 @@ void PlayersManager::AverageHighestPlayerLevelByGroup(int GroupID, int m, double
         }
         double weighted_sum_of_first_m_players_in_group = 
             findWeightOfMFirstPlayers(group_to_find->getLevelsTree().get(),
-             group_to_find->getLevelsTree()->getRoot(), m, level_of_m_th_player_in_group);
+        group_to_find->getLevelsTree()->doesKeyExists(level_of_m_th_player_in_group), m, level_of_m_th_player_in_group);
         *level = weighted_sum_of_first_m_players_in_group/((double)m);
     }
 }

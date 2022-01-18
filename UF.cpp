@@ -24,6 +24,10 @@ Group* UF::Find(int GroupID) const{
 
 void UF::Union(int id1, int id2)
 {
+    if(id1 == 7 || id2 == 7)
+    {
+        printf("");
+    }
     Group* group1 = Find(id1);
     Group* group2 = Find(id2);
     if(group1 == group2){

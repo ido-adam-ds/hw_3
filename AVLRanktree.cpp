@@ -337,6 +337,8 @@ void AVLRanktree::handleWeights(Node node, Node dst)
         handleMiddlePlayerScores(iter, dst_scores);
         iter = ((iter)->left_son);
     }
+
+
 }
 
 void AVLRanktree::handleMiddlePlayerWeight( Node iter,  int dst_players)
@@ -378,13 +380,6 @@ void AVLRanktree::handleMiddlePlayerScores( Node iter, int *dst_scores)
 void AVLRanktree::swapPlayerSumWeight(AVLnode* root, AVLnode* new_root)
 {
     new_root->weighted_sum = root->weighted_sum;
-//
-//    int temp_root_players = getSumOfLevel(root);
-//    int temp_new_root_players = getSumOfLevel(new_root);
-//    int root_weight = root->weighted_sum;
-//
-//    root->weighted_sum = new_root->weighted_sum+temp_root_players-temp_new_root_players;
-//    new_root->weighted_sum = root_weight+temp_new_root_players-temp_root_players;
 
 }
 
@@ -612,6 +607,34 @@ int AVLRanktree::numOfPlayersWithLowerLevel(int level)
         r+=getAllPlayersWeight(iter->left_son)+getNumPlayers(iter);
     }
     r+=num_of_zero_level_players;
+    return r;
+}
+
+
+int AVLRanktree::sumOfPlayersWithLowerLevel(int level, int* tot_players)
+{
+    if(level < 0) return 0;
+    int r = 0;
+    Node iter = root;
+    while(iter != nullptr && iter->key != level)
+    {
+        bool isBigger = iter->key < level;
+        if(isBigger)
+        {
+            r+=getWeightedSum(iter->left_son)+ getSumOfLevel(iter);
+            iter = iter->right_son;
+        }
+        else{
+            *tot_players += getNumPlayers(iter)+ getAllPlayersWeight(iter->right_son);
+
+            iter = iter->left_son;
+        }
+    }
+    if(iter != nullptr)
+    {
+        r+=getWeightedSum(iter->left_son)+getSumOfLevel(iter);
+        *tot_players += getAllPlayersWeight(iter->right_son);
+    }
     return r;
 }
 

@@ -123,6 +123,7 @@ static shared_ptr<AVLRanktree> buildTreeFromSortedArray(AVLnode** array,
     if(array[0]){
         result_tree->setRoot(buildTreeFromSortedArrayAux(array, 0, size - 1));
         AVLnode* iter = result_tree->getRoot();
+        //iter->player_weight= getNumPlayers(iter)*iter->key + getWeightedSum(iter->right_son) + getWeightedSum(iter->left_son);
         AVLnode* prev = iter;
         AVLnode* max_to_insert;
         while(iter){
@@ -140,6 +141,12 @@ static shared_ptr<AVLRanktree> buildTreeFromSortedArray(AVLnode** array,
     result_tree -> setIterator(0);
     result_tree->setNumOfZeroLevelPlayers(total_zero_level_players);
     result_tree->setSize(size);
+    if(result_tree->getRoot())
+    {
+
+        result_tree->getRoot()->weighted_sum = getWeightedSum(result_tree->getRoot()->right_son)+getWeightedSum(result_tree->getRoot()->left_son) + getNumPlayers(result_tree->getRoot())*result_tree->getRoot()->key;
+        assert(getWeightedSum(result_tree->getRoot()) == getWeightedSum(result_tree->getRoot()->right_son)+getWeightedSum(result_tree->getRoot()->left_son) + getNumPlayers(result_tree->getRoot())*result_tree->getRoot()->key);
+    }
     return result_tree;
 }
 
@@ -149,7 +156,6 @@ static void mergeArraysAux(AVLnode** first_array, AVLnode** second_array,
     while(i < size_of_first && j < size_of_second &&
          first_array[i] && second_array[j]){
         if(first_array[i]->key < second_array[j]->key){
-            //merged[k++] = first_array[i++];
             AVLnode* node_to_insert = new AVLnode(first_array[i]->key);
             for(int score = 0; score < MAX_SIZE; score++){
                 node_to_insert->scores[score] += first_array[i]->scores[score];
@@ -175,6 +181,7 @@ static void mergeArraysAux(AVLnode** first_array, AVLnode** second_array,
                                                     second_array[j]->scores[score];
             }
             node_to_insert->player_weight = first_array[i]->player_weight + second_array[j]->player_weight;
+           // node_to_insert->weighted_sum = first_array[i]->weighted_sum + second_array[j]->weighted_sum;
             merged[k++] = node_to_insert;
             i++;
             j++;
@@ -260,6 +267,8 @@ static shared_ptr<AVLRanktree> buildTreeFromTrees(shared_ptr<AVLRanktree> first_
 }
 
 void Group::mergeLevelsTreeWithAnotherGroup(Group* other_group){
+    if(getGroupId()==7||other_group->getGroupId() == 7)
+        printf("");
     shared_ptr<AVLRanktree> merged_tree = buildTreeFromTrees(levels_tree,
          other_group->getLevelsTree());
     group_size += other_group->getSize();
