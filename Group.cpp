@@ -125,7 +125,6 @@ static shared_ptr<AVLRanktree> buildTreeFromSortedArray(AVLnode** array,
     if(array[0]){
         result_tree->setRoot(buildTreeFromSortedArrayAux(array, 0, size - 1));
         AVLnode* iter = result_tree->getRoot();
-        //iter->player_weight= getNumPlayers(iter)*iter->key + getWeightedSum(iter->right_son) + getWeightedSum(iter->left_son);
         AVLnode* prev = iter;
         AVLnode* max_to_insert;
         while(iter){
@@ -145,8 +144,14 @@ static shared_ptr<AVLRanktree> buildTreeFromSortedArray(AVLnode** array,
     result_tree->setSize(size);
     if(result_tree->getRoot())
     {
-
-        result_tree->getRoot()->weighted_sum = getWeightedSum(result_tree->getRoot()->right_son)+getWeightedSum(result_tree->getRoot()->left_son) + getNumPlayers(result_tree->getRoot())*result_tree->getRoot()->key;
+        result_tree->getRoot()->weighted_sum = getWeightedSum(result_tree->getRoot()->right_son)+
+            getWeightedSum(result_tree->getRoot()->left_son) + 
+            getNumPlayers(result_tree->getRoot())*result_tree->getRoot()->key;
+        /*for(int score = 0; score < MAX_SIZE; score++){
+            (result_tree->getRoot()->scores)[score] += result_tree->getRoot()->scores[score] + 
+                getNumPlayersWithScore(result_tree->getRoot()->left_son, score) + 
+                  getNumPlayersWithScore(result_tree->getRoot()->right_son, score);
+        }*/
     }
     return result_tree;
 }

@@ -171,16 +171,58 @@ void PlayersManager::AverageHighestPlayerLevelByGroup(int GroupID, int m, double
     }
 }
 
-static void setLowerAndUpperBoundOfMFirstPlayersWithScore(AVLnode* node, int score, 
-            int m, int level_of_m_th_player, int* LowerBoundPlayers, int* HigherBoundPlayers){
+static void handleZeroLevelOfMThPlayer(AVLRanktree* tree, AVLnode* node, int score, 
+            int m, int* LowerBoundPlayers, int* HigherBoundPlayers){
+    int current_player_weight_with_score = 0, current_player_weight = 0;
     AVLnode* iter = node;
-    int current_player_weight_with_score = 0;
     if(iter != nullptr){
         current_player_weight_with_score = iter->scores[score];
+        current_player_weight = iter->player_weight;
     }
+    current_player_weight_with_score += tree->getZeroLevelPlayersArray()[score];
+    current_player_weight += tree->getNumOfZeroLevelPlayers();
+    int diff = tree->getNumOfZeroLevelPlayers() - (current_player_weight - m);
+    if(tree->getZeroLevelPlayersArray()[score] <= diff){
+        *HigherBoundPlayers = current_player_weight_with_score;
+    }
+    else{
+        *HigherBoundPlayers = current_player_weight_with_score -
+         tree->getZeroLevelPlayersArray()[score] + diff;
+    }
+    if(diff <=
+            tree->getNumOfZeroLevelPlayers() - tree->getZeroLevelPlayersArray()[score]){
+        *LowerBoundPlayers = current_player_weight_with_score - tree->getZeroLevelPlayersArray()[score];
+    }
+    else{
+        *LowerBoundPlayers = current_player_weight_with_score -
+         tree->getZeroLevelPlayersArray()[score] +
+            (diff - (tree->getNumOfZeroLevelPlayers() - 
+                tree->getZeroLevelPlayersArray()[score]));
+    }
+}
+
+static void setLowerAndUpperBoundOfMFirstPlayersWithScore(AVLRanktree* tree, AVLnode* node, int score, 
+            int m, int level_of_m_th_player, int* LowerBoundPlayers, int* HigherBoundPlayers){
+    if(m == 0){
+        *LowerBoundPlayers = 0;
+        *HigherBoundPlayers = 0;
+        return;
+    }
+    if(level_of_m_th_player == 0){
+        handleZeroLevelOfMThPlayer(tree, node, score, m, LowerBoundPlayers, HigherBoundPlayers);
+        return;
+    }
+    AVLnode* iter = node;
+    int current_player_weight_with_score = iter->scores[score];
+    int current_player_weight = iter->player_weight;
     while(iter){
         if(iter->key < level_of_m_th_player){
-            current_player_weight_with_score = iter->right_son->scores[score];
+            if(iter->left_son){
+                current_player_weight_with_score -= iter->left_son->scores[score];
+                current_player_weight -= iter->left_son->player_weight;
+            }
+            current_player_weight_with_score -= getNumPlayersWithScore(iter, score);
+            current_player_weight -= getNumPlayers(iter);
             iter = iter->right_son;
         }
         else if(iter->key > level_of_m_th_player){
@@ -189,25 +231,29 @@ static void setLowerAndUpperBoundOfMFirstPlayersWithScore(AVLnode* node, int sco
         else{
             if(iter->left_son){
                 current_player_weight_with_score -= iter->left_son->scores[score];
+                current_player_weight -= iter->left_son->player_weight;
             }
             int num_of_players_in_m_th_player_level = getNumPlayers(iter);
             int num_of_players_in_m_th_player_level_with_score = getNumPlayersWithScore(iter, score);
             int num_of_players_with_score_without_m_th_player_level =
                  current_player_weight_with_score - num_of_players_in_m_th_player_level_with_score;
-            if(current_player_weight_with_score <= m){
+            int diff = num_of_players_in_m_th_player_level - (current_player_weight - m);
+            if(num_of_players_in_m_th_player_level_with_score <= diff){
                 *HigherBoundPlayers = current_player_weight_with_score;
             }
             else{
-                *HigherBoundPlayers = m;
+                *HigherBoundPlayers = num_of_players_with_score_without_m_th_player_level + diff;
             }
-            if(m - num_of_players_with_score_without_m_th_player_level <=
+            if(diff <=
                  num_of_players_in_m_th_player_level - num_of_players_in_m_th_player_level_with_score){
                 *LowerBoundPlayers = num_of_players_with_score_without_m_th_player_level;
             }
             else{
-                *LowerBoundPlayers = m - 
-                    (num_of_players_in_m_th_player_level - num_of_players_in_m_th_player_level_with_score);
+                *LowerBoundPlayers = num_of_players_with_score_without_m_th_player_level +
+                    (diff - (num_of_players_in_m_th_player_level - 
+                        num_of_players_in_m_th_player_level_with_score));
             }
+            return;
         }
     }
 }
@@ -219,8 +265,9 @@ void PlayersManager::GetPlayersBound(int GroupID, int score, int m,
         if(level_of_m_th_player == -1){
             throw Failure();
         }
-        setLowerAndUpperBoundOfMFirstPlayersWithScore(all_players_levels_tree.getRoot(),
-            score, m, level_of_m_th_player, LowerBoundPlayers, HigherBoundPlayers);
+        setLowerAndUpperBoundOfMFirstPlayersWithScore(&all_players_levels_tree,
+         all_players_levels_tree.getRoot(), score, m, level_of_m_th_player,
+          LowerBoundPlayers, HigherBoundPlayers);
     }
     else{
         Group* group_to_find = groups.Find(GroupID);
@@ -228,8 +275,9 @@ void PlayersManager::GetPlayersBound(int GroupID, int score, int m,
         if(level_of_m_th_player_in_group == -1){
             throw Failure();
         }
-        setLowerAndUpperBoundOfMFirstPlayersWithScore(group_to_find->getLevelsTree()->getRoot(),
-            score, m, level_of_m_th_player_in_group, LowerBoundPlayers, HigherBoundPlayers);
+        setLowerAndUpperBoundOfMFirstPlayersWithScore(group_to_find->getLevelsTree().get(),
+        group_to_find->getLevelsTree()->getRoot(), score, m, level_of_m_th_player_in_group,
+         LowerBoundPlayers, HigherBoundPlayers);
     }
 }
 
