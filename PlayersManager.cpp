@@ -135,35 +135,16 @@ static int findWeightOfMFirstPlayers(AVLRanktree* tree, AVLnode* node,
     if(level_of_m_th_player == 0)
         return result;
     int diff = 0;
-    result -= tree->sumOfPlayersWithLowerLevel(level_of_m_th_player, &diff);
+    result -= tree->sumOfPlayersWithLowerLevel(level_of_m_th_player);
      diff = getAllPlayersWeight(tree->getRoot())+tree->getNumOfZeroLevelPlayers() - tree->numOfPlayersWithLowerLevel(level_of_m_th_player);
 
     diff = m-diff;
-//    res -= getWeightedSum(node->left_son);
-//    int diff = m - getAllPlayersWeight(node->right_son);
-//    int extra = getNumPlayers(node) - diff;
+
     result += node->key*diff;
     return result;
 //
 
 
-    int current_player_weight = 0;//, result = 0;
-    AVLnode* iter = tree->getRoot();
-//    if(iter!=nullptr){
-//        current_player_weight = iter->player_weight;
-//        result = iter->weighted_sum;
-//    }
-    while(iter){
-        if(iter->key < level_of_m_th_player){
-            result-= getWeightedSum(iter->left_son);
-            result-= getSumOfLevel(iter);
-            iter = iter->right_son;
-        }
-        else if(iter->key > level_of_m_th_player){
-            iter = iter->left_son;
-        }
-    }
-    return result;
 }
 
 void PlayersManager::AverageHighestPlayerLevelByGroup(int GroupID, int m, double* level){

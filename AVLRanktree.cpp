@@ -611,7 +611,7 @@ int AVLRanktree::numOfPlayersWithLowerLevel(int level)
 }
 
 
-int AVLRanktree::sumOfPlayersWithLowerLevel(int level, int* tot_players)
+int AVLRanktree::sumOfPlayersWithLowerLevel(int level)
 {
     if(level < 0) return 0;
     int r = 0;
@@ -625,7 +625,6 @@ int AVLRanktree::sumOfPlayersWithLowerLevel(int level, int* tot_players)
             iter = iter->right_son;
         }
         else{
-            *tot_players += getNumPlayers(iter)+ getAllPlayersWeight(iter->right_son);
 
             iter = iter->left_son;
         }
@@ -633,7 +632,6 @@ int AVLRanktree::sumOfPlayersWithLowerLevel(int level, int* tot_players)
     if(iter != nullptr)
     {
         r+=getWeightedSum(iter->left_son)+getSumOfLevel(iter);
-        *tot_players += getAllPlayersWeight(iter->right_son);
     }
     return r;
 }

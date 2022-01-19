@@ -147,7 +147,6 @@ static shared_ptr<AVLRanktree> buildTreeFromSortedArray(AVLnode** array,
     {
 
         result_tree->getRoot()->weighted_sum = getWeightedSum(result_tree->getRoot()->right_son)+getWeightedSum(result_tree->getRoot()->left_son) + getNumPlayers(result_tree->getRoot())*result_tree->getRoot()->key;
-        assert(getWeightedSum(result_tree->getRoot()) == getWeightedSum(result_tree->getRoot()->right_son)+getWeightedSum(result_tree->getRoot()->left_son) + getNumPlayers(result_tree->getRoot())*result_tree->getRoot()->key);
     }
     return result_tree;
 }

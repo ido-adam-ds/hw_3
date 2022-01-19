@@ -170,6 +170,7 @@ namespace DS{
             num_of_zero_level_players = new_num;
         }
 
+        int sumOfPlayersWithLowerLevel(int level);
     };
 
 
